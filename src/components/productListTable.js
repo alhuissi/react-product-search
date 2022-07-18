@@ -1,5 +1,6 @@
 import {
     Box,
+    Button,
     Container,
     Paper,
     Table,
@@ -7,37 +8,68 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow,
-    Typography
+    TableRow
 } from '@mui/material';
+import { useCallback, useState } from 'react';
+
+const tableHeaders = [
+    { title: 'image' },
+    { title: 'code' },
+    { title: 'stock' },
+    { title: 'price' },
+    { title: 'description' }
+]
+
+const sortData = ({ data, orderBy, reverse }) => {
+    const sortedProducts = data.sort((productA, productB) => productA[orderBy] < productB[orderBy] ? -1 : 1);
+    if (reverse) return sortedProducts.reverse();
+    return sortedProducts;
+}
 
 export const ProductListTable = ({ products }) => {
+    const [order, setOrder] = useState('desc');
+    const [orderBy, setOrderBy] = useState('position');
+
+    const handleRequestSort = (column) => {
+        const isAsc = orderBy === column && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(column);
+    };
+
+    const sortedData = useCallback(
+        () => sortData({ data: products, orderBy, reverse: order === "desc" }),
+        [products, orderBy, order]
+    );
 
     return (
         <Container>
             <TableContainer component={Paper}>
                 <Table>
-                    <TableHead sx={{backgroundColor:"#f9f9f9"}}>
+                    <TableHead sx={{ backgroundColor: "#f9f9f9" }}>
                         <TableRow>
-                            <TableCell>
-                                Image
-                            </TableCell>
-                            <TableCell>
-                                Code
-                            </TableCell>
-                            <TableCell>
-                                Stock
-                            </TableCell>
-                            <TableCell>
-                                Price
-                            </TableCell>
-                            <TableCell width="70%">
-                                Description
-                            </TableCell>
+                            {tableHeaders.map((header) => {
+                                return (
+                                    <TableCell key={header.title} width={header.title === 'description' ? "70%" : ""}>
+                                        <Button
+                                            variant="text"
+                                            sx={{ fontWeight: 600, color: 'black' }}
+                                            onClick={() => handleRequestSort(header.title)}
+                                            endIcon={
+                                                orderBy === header.title ?
+                                                    order === 'desc' ?
+                                                        <span>&#8593;</span> :
+                                                        <span>&#8595;</span> :
+                                                    <span style={{ visibility: 'hidden' }}>&#8593;</span>}
+                                        >
+                                            {header.title}
+                                        </Button>
+                                    </TableCell>
+                                )
+                            })}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {products.map((product) => {
+                        {sortedData().map((product) => {
                             return (
                                 <TableRow
                                     key={product.code}
@@ -46,38 +78,26 @@ export const ProductListTable = ({ products }) => {
                                         <Box
                                             sx={{
                                                 alignItems: 'center',
-                                                display: 'flex'
+                                                backgroundImage: `url(assets/${product.image})`,
+                                                backgroundPosition: 'center',
+                                                backgroundSize: 'contain',
+                                                backgroundRepeat: 'no-repeat',
+                                                borderRadius: 1,
+                                                display: 'flex',
+                                                height: 80,
+                                                justifyContent: 'center',
+                                                overflow: 'hidden',
+                                                width: 80
                                             }}
-                                        >
-                                            <Box
-                                                sx={{
-                                                    alignItems: 'center',
-                                                    backgroundImage: `url(assets/${product.image})`,
-                                                    backgroundPosition: 'center',
-                                                    backgroundSize: 'contain',
-                                                    backgroundRepeat: 'no-repeat',
-                                                    borderRadius: 1,
-                                                    display: 'flex',
-                                                    height: 80,
-                                                    justifyContent: 'center',
-                                                    overflow: 'hidden',
-                                                    width: 80
-                                                }}
-                                            />
-                                        </Box>
+                                        />
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell align="center">
                                         {product.code}
                                     </TableCell>
-                                    <TableCell>
-                                        <Typography
-                                            color="textSecondary"
-                                            variant="body2"
-                                        >
-                                            {product.quantity}
-                                        </Typography>
+                                    <TableCell align="center">
+                                        {product.quantity}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell align="center">
                                         {product.price}
                                     </TableCell>
                                     <TableCell width="70%">

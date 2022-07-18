@@ -6,7 +6,7 @@ import data from './products.json';
 
 const productsArray = data.products;
 
-function App() {
+const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState(productsArray);
 
